@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const CartContext = createContext();
 
@@ -9,6 +9,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [itemCount, setItemCount] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+  const isHydrated = useRef(false);
 
   useEffect(() => {
     const storedCartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
@@ -19,21 +20,28 @@ export const CartProvider = ({ children }) => {
     setCartItems(storedCartItems);
     setItemCount(storedItemCount);
     setTotalPrice(storedTotalPrice);
+    isHydrated.current = true;
   }, []);
 
   const addToCart = (product) => {
     setCartItems((prevCartItems) => {
-      const updatedCartItems = [...prevCartItems, product];
-      localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
-      return updatedCartItems;
+      const merged = isHydrated.current
+        ? [...prevCartItems, product]
+        : [...JSON.parse(localStorage.getItem("cartItems") || "[]"), product];
+      localStorage.setItem("cartItems", JSON.stringify(merged));
+      return merged;
     });
     setItemCount((prevItemCount) => {
-      const newItemCount = prevItemCount + 1;
+      const newItemCount = isHydrated.current
+        ? prevItemCount + 1
+        : (JSON.parse(localStorage.getItem("itemCount") || "0") || 0) + 1;
       localStorage.setItem("itemCount", newItemCount.toString());
       return newItemCount;
     });
     setTotalPrice((prevTotalPrice) => {
-      const newTotalPrice = prevTotalPrice + product.price;
+      const newTotalPrice = isHydrated.current
+        ? prevTotalPrice + product.price
+        : (parseFloat(localStorage.getItem("totalPrice") || "0") || 0) + product.price;
       localStorage.setItem("totalPrice", newTotalPrice.toString());
       return newTotalPrice;
     });
@@ -41,27 +49,34 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = (product) => {
     setCartItems((prevCartItems) => {
-      const index = prevCartItems.findIndex((item) => item.id === product.id);
-      if (index === -1) return prevCartItems; // If item not found, return previous cart items
+      const merged = isHydrated.current
+        ? [...prevCartItems]
+        : [...JSON.parse(localStorage.getItem("cartItems") || "[]")];
+      const index = merged.findIndex((item) => item.id === product.id);
+      if (index === -1) return merged;
 
-      const updatedCartItems = [...prevCartItems];
-      updatedCartItems.splice(index, 1); // Remove the item from the array
-      localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
-      return updatedCartItems;
+      merged.splice(index, 1);
+      localStorage.setItem("cartItems", JSON.stringify(merged));
+      return merged;
     });
 
     setItemCount((prevItemCount) => {
-      const newItemCount = prevItemCount - 1;
-      localStorage.setItem("itemCount", newItemCount.toString());
-      return newItemCount;
+      const newCount = isHydrated.current
+        ? prevItemCount - 1
+        : Math.max(0, (JSON.parse(localStorage.getItem("itemCount") || "0") || 0) - 1);
+      localStorage.setItem("itemCount", newCount.toString());
+      return newCount;
     });
 
     setTotalPrice((prevTotalPrice) => {
-      const removedItem = cartItems.find((item) => item.id === product.id);
-      if (!removedItem) return prevTotalPrice; // If item not found, return previous total price
-      const newTotalPrice = prevTotalPrice - removedItem.price;
-      localStorage.setItem("totalPrice", newTotalPrice.toString());
-      return newTotalPrice;
+      const items = isHydrated.current ? cartItems : JSON.parse(localStorage.getItem("cartItems") || "[]");
+      const removedItem = items.find((item) => item.id === product.id);
+      if (!removedItem) return prevTotalPrice;
+      const newPrice = isHydrated.current
+        ? prevTotalPrice - removedItem.price
+        : Math.max(0, (parseFloat(localStorage.getItem("totalPrice") || "0") || 0) - removedItem.price);
+      localStorage.setItem("totalPrice", newPrice.toString());
+      return newPrice;
     });
   };
 
