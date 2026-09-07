@@ -20,7 +20,7 @@ export default function Sidebar() {
           <ul className="px-5 py-6 space-y-2">
             <li>
               <Link
-                href="/"
+                href="/shop?category=men"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaHome className="mr-3" />
@@ -29,7 +29,7 @@ export default function Sidebar() {
             </li>
             <li>
               <Link
-                href="/about"
+                href="/shop?category=women"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaInfoCircle className="mr-3" />
@@ -38,7 +38,7 @@ export default function Sidebar() {
             </li>
             <li>
               <Link
-                href="/contact"
+                href="/shop?category=kids"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaPhone className="mr-3" />
@@ -78,7 +78,7 @@ export default function Sidebar() {
             </li>
             <li>
               <Link
-                href="/categories"
+                href="/collections"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaList className="mr-3" />
@@ -96,7 +96,7 @@ export default function Sidebar() {
           <ul className="py-6 space-y-14 px-2">
             <li>
               <Link
-                href="/categories"
+                href="/collections"
                 className=" hover:text-white transition-colors duration-200"
               >
                 <FaList className="mr-3" size={20} />
