@@ -68,6 +68,16 @@ describe("ScVal helpers", () => {
       expect(() => bytes32ToScVal("aabbcc")).toThrow("order_id must be exactly 32 bytes");
     });
 
+    it("produces byte-identical XDR for hexString and uint8ArrayOfSameBytes", () => {
+      const hex = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+      const bytes = hexToBytes(hex);
+      const fromHex = bytes32ToScVal(hex);
+      const fromBytes = bytes32ToScVal(bytes);
+      expect(fromHex.toXDR("hex")).toBe(fromBytes.toXDR("hex"));
+      expect(fromHex.toXDR("base64")).toBe(fromBytes.toXDR("base64"));
+      expect(Array.from(fromHex.bytes())).toEqual(Array.from(fromBytes.bytes()));
+    });
+
     it("throws when passed a 64-character non-hex string instead of producing zero bytes", () => {
       const nonHex64 = "g".repeat(64);
       expect(() => bytes32ToScVal(nonHex64)).toThrow(/invalid hex character/);
@@ -114,7 +124,7 @@ describe("ScVal helpers", () => {
 
     it("decodes bytes to hex string", () => {
       const bytes = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
-      const scVal = xdr.ScVal.scvBytes(Buffer.from(bytes));
+      const scVal = xdr.ScVal.scvBytes(bytes);
       expect(scValToString(scVal)).toBe("deadbeef");
     });
   });
