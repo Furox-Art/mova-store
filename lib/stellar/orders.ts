@@ -25,7 +25,7 @@ import {
   tokenForContract,
 } from "./config";
 import { connectWallet, signWithFreighter } from "./freighter";
-import { hashOrderId, bytesToHex, hexToBytes } from "./scval";
+import { hashOrderId, bytesToHex, resolveOrderIdHash } from "./scval";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -85,7 +85,7 @@ export async function readOrder(orderId: string): Promise<OrderDetails | null> {
   const server = new rpc.Server(RPC_URL);
   const contract = new Contract(CHECKOUT_CONTRACT_ID);
 
-  const orderIdHashBytes = await hashOrderId(orderId);
+  const orderIdHashBytes = await resolveOrderIdHash(orderId);
   const orderIdHash = bytesToHex(orderIdHashBytes);
 
   const account = await server.getAccount(
@@ -222,7 +222,7 @@ export async function dispatchOrder(
     const server = new rpc.Server(RPC_URL);
     const contract = new Contract(CHECKOUT_CONTRACT_ID);
 
-    const orderIdHashBytes = await hashOrderId(orderId);
+    const orderIdHashBytes = await resolveOrderIdHash(orderId);
 
     const account = await server.getAccount(publicKey);
 
@@ -303,7 +303,7 @@ export async function refundOrder(orderId: string): Promise<OrderActionResult> {
     const server = new rpc.Server(RPC_URL);
     const contract = new Contract(CHECKOUT_CONTRACT_ID);
 
-    const orderIdHashBytes = await hashOrderId(orderId);
+    const orderIdHashBytes = await resolveOrderIdHash(orderId);
 
     const account = await server.getAccount(publicKey);
 
