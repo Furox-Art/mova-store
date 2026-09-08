@@ -6,11 +6,17 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-r from-mova-deep via-purple-700 to-purple-600 py-2 text-white">
       <section className="container mx-auto flex h-28 flex-col items-center justify-between divide-black text-center font-normal sm:flex-row sm:divide-x-2 sm:divide-white/30">
-        <span className="my-10 hidden gap-4 text-sm sm:my-0 sm:flex">
-          <span className="transition">
+        <span className="my-10 hidden gap-2 text-sm sm:my-0 sm:flex">
+          <Link
+            href="/terms"
+            className="transition hover:underline hover:underline-offset-1"
+          >
             Terms of Use
-          </span>
-          <span className="transition">
+          </Link>
+          <Link
+            href="/privacy"
+            className="transition hover:underline hover:underline-offset-1"
+          >
             Privacy Policy
           </span>
           <Link
