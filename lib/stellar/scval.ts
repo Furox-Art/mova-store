@@ -1,4 +1,4 @@
-import { xdr, Address, scValToNative } from "@stellar/stellar-sdk";
+import { xdr, Address, nativeToScVal, scValToNative } from "@stellar/stellar-sdk";
 
 // ---------------------------------------------------------------------------
 // ScVal construction + decoding helpers for the checkout contract.
@@ -22,11 +22,11 @@ export function i128ToScVal(value: bigint | number | string): xdr.ScVal {
  * Build a BytesN<32> ScVal from a Uint8Array (or hex string).
  */
 export function bytes32ToScVal(bytes: Uint8Array | string): xdr.ScVal {
-  const buf = typeof bytes === "string" ? Buffer.from(hexToBytes(bytes)) : Buffer.from(bytes);
-  if (buf.length !== 32) {
-    throw new Error(`order_id must be exactly 32 bytes (got ${buf.length})`);
+  const rawBytes = typeof bytes === "string" ? hexToBytes(bytes) : bytes;
+  if (rawBytes.length !== 32) {
+    throw new Error(`order_id must be exactly 32 bytes (got ${rawBytes.length})`);
   }
-  return xdr.ScVal.scvBytes(buf);
+  return nativeToScVal(rawBytes);
 }
 
 /**
@@ -130,4 +130,21 @@ export async function hashOrderId(orderId: string): Promise<Uint8Array> {
   const data = new TextEncoder().encode(orderId);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return new Uint8Array(digest);
+}
+// ---------------------------------------------------------------------------
+// Order ID Resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves an order ID to its 32-byte hash for contract operations.
+ * - If orderId is a 64-character hex string, it is already hashed (from indexer events) -> return as-is
+ * - Otherwise, it is a raw pre-image (e.g., SS-...) -> SHA-256 hash it
+ */
+export async function resolveOrderIdHash(orderId: string): Promise<Uint8Array> {
+  // Check if already a 64-hex hash (from indexer events)
+  if (/^[0-9a-fA-F]{64}$/.test(orderId)) {
+    return hexToBytes(orderId);
+  }
+  // Hash the raw pre-image
+  return hashOrderId(orderId);
 }
