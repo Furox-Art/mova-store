@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: "20"
   RUST_VERSION: "1.91.0"
@@ -15,6 +22,7 @@ jobs:
   frontend:
     name: Frontend (Lint, Type Check, Test, Build)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -33,11 +41,13 @@ jobs:
         run: npm run lint
 
       - name: Type check
-        run: npx tsc --noEmit --skipLibCheck
-        continue-on-error: true # Allow to pass while fixing type errors
+        run: npm run type-check
 
       - name: Run tests
         run: npm run test
+
+      - name: Run test coverage
+        run: npm run test:coverage
 
       - name: Build Next.js
         run: npm run build
@@ -53,8 +63,9 @@ jobs:
 
   # Soroban contract checks
   contracts:
-    name: Soroban Contracts (Build, Test)
+    name: Soroban Contracts (Fmt, Clippy, Build, Test)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -65,6 +76,7 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
           targets: wasm32v1-none
+          components: rustfmt, clippy
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -80,6 +92,14 @@ jobs:
             ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-
             ${{ runner.os }}-cargo-
 
+      - name: Check formatting
+        working-directory: contracts/checkout
+        run: cargo fmt -- --check
+
+      - name: Clippy
+        working-directory: contracts/checkout
+        run: cargo clippy --all-targets -- -D warnings
+
       - name: Build contracts
         working-directory: contracts/checkout
         run: cargo build --release --target wasm32v1-none
@@ -92,6 +112,7 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -105,7 +126,6 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
-        continue-on-error: true # Report but don't fail yet
 
       - name: Check for secrets
         uses: trufflesecurity/trufflehog@main
@@ -116,6 +136,7 @@ jobs:
   rust-security:
     name: Rust Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -127,7 +148,9 @@ jobs:
           toolchain: stable
 
       - name: Install cargo-audit
-        run: cargo install cargo-audit --locked
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
 
       - name: Run cargo audit
         working-directory: contracts/checkout
@@ -137,8 +160,9 @@ jobs:
   # Summary job that requires all checks to pass
   ci-success:
     name: CI Success
-    needs: [frontend, contracts, security]
+    needs: [frontend, contracts, security, rust-security]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always()
 
     steps:
@@ -150,6 +174,14 @@ jobs:
           fi
           if [[ "${{ needs.contracts.result }}" != "success" ]]; then
             echo "Contracts job failed"
+            exit 1
+          fi
+          if [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "Security job failed"
+            exit 1
+          fi
+          if [[ "${{ needs.rust-security.result }}" != "success" ]]; then
+            echo "Rust security job failed"
             exit 1
           fi
           echo "All required checks passed!"

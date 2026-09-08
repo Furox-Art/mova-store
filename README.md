@@ -81,7 +81,7 @@ buyer ──pay──▶ contract (escrow) ──dispatch──▶ merchant
   - [Step 5 — Initialize with your merchant wallet](#step-5--initialize-with-your-merchant-wallet)
   - [Step 6 — Wire the deployed contract to the storefront](#step-6--wire-the-deployed-contract-to-the-storefront)
   - [Convenience script](#convenience-script)
-- [Paying with USDC (testnet)](#paying-with-usdc-testnet)
+- [Paying with Stellar (testnet)](#paying-with-stellar-testnet)
 - [Environment Variables Reference](#environment-variables-reference)
 - [Security Notes](#security-notes)
 - [Contributing](#contributing)
@@ -203,8 +203,12 @@ mova-store/
 │       │   └── test.rs             #   mock-token + native-asset integration tests
 │       ├── Cargo.toml
 │       └── README.md               #   contract interface + manual CLI examples
+├── context/                        # React context (cart, auth)
 ├── docs/
-│   └── ARCHITECTURE.md             # Deep Stellar integration design rationale
+│   ├── ARCHITECTURE.md             # Deep Stellar integration design rationale
+│   ├── MAINNET_DEPLOYMENT.md       # Mainnet deployment guide
+│   └── TROUBLESHOOTING.md          # Common issues and fixes
+├── supabase/                       # Supabase schema and config
 ├── scripts/
 │   └── deploy-testnet.sh           # one-command build + deploy + initialize
 ├── public/                         # Static assets (product images)
