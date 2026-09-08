@@ -19,8 +19,14 @@ export default function Sidebar() {
         <nav className="divide-y divide-gray-200">
           <ul className="px-5 py-6 space-y-2">
             <li>
+              <Link href="/search" className="w-full flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <FaSearch className="mr-2 text-gray-400" />
+                <span className="text-gray-400 text-sm">Search Shoes</span>
+              </Link>
+            </li>
+            <li>
               <Link
-                href="/"
+                href="/shop?category=men"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaHome className="mr-3" />
@@ -29,7 +35,7 @@ export default function Sidebar() {
             </li>
             <li>
               <Link
-                href="/about"
+                href="/shop?category=women"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaInfoCircle className="mr-3" />
@@ -38,7 +44,7 @@ export default function Sidebar() {
             </li>
             <li>
               <Link
-                href="/contact"
+                href="/shop?category=kids"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaPhone className="mr-3" />
@@ -78,7 +84,7 @@ export default function Sidebar() {
             </li>
             <li>
               <Link
-                href="/categories"
+                href="/collections"
                 className="flex items-center p-4 hover:bg-gray-100 hover:text-purple-500 transition-colors duration-200"
               >
                 <FaList className="mr-3" />
@@ -89,14 +95,14 @@ export default function Sidebar() {
         </nav>
       </aside>
 
-      {/* small screen mobile sidevar */}
+      {/* small screen mobile sidebar */}
 
       <aside className="flex flex-col justify-center  w-10 bg-purple-600 text-gray-700 flex-shrink-0  sm:hidden  pt-10">
         <nav className="divide-y divide-gray-200">
           <ul className="py-6 space-y-14 px-2">
             <li>
               <Link
-                href="/categories"
+                href="/collections"
                 className=" hover:text-white transition-colors duration-200"
               >
                 <FaList className="mr-3" size={20} />
